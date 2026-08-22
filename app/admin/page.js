@@ -65,6 +65,7 @@ export default function AdminPage() {
   const [newId, setNewId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lastPing, setLastPing] = useState(null);
   const router = useRouter();
 
   async function handleLogout() {
@@ -80,6 +81,9 @@ export default function AdminPage() {
         setCards(d.cards || []);
         setLoading(false);
       });
+    fetch('/api/status')
+      .then((r) => r.json())
+      .then((d) => setLastPing(d.last_ping));
   }, []);
 
   async function addCard(e) {
@@ -103,6 +107,19 @@ export default function AdminPage() {
 
   const activeCount = cards.filter((c) => c.review_link).length;
 
+  function pingStatus() {
+    if (!lastPing) return { label: 'No ping recorded yet', level: 'pending' };
+    const hoursAgo = (Date.now() - new Date(lastPing).getTime()) / 3600000;
+    const label =
+      hoursAgo < 1
+        ? 'Checked in less than an hour ago'
+        : hoursAgo < 48
+        ? `Checked in ${Math.round(hoursAgo)}h ago`
+        : `Checked in ${Math.round(hoursAgo / 24)}d ago`;
+    return { label, level: hoursAgo < 48 ? 'active' : 'pending' };
+  }
+  const ping = pingStatus();
+
   return (
     <main className="hl-shell">
       <div className="hl-header">
@@ -111,6 +128,7 @@ export default function AdminPage() {
           <h1 className="hl-title">Your QR cards</h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span className={`hl-chip ${ping.level}`}>DB: {ping.label}</span>
           <div className="hl-count">{activeCount} active · {cards.length} total</div>
           <button className="hl-btn-ghost" onClick={handleLogout}>Log out</button>
         </div>
