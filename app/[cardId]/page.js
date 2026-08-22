@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation';
 import { getSupabaseServer } from '../../lib/supabase';
 
+// Always check the database fresh — never cache this page. Without this,
+// Next.js can serve an old cached result even after a card is edited or removed.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function CardRedirectPage({ params }) {
   const supabase = getSupabaseServer();
 
