@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 function CardRow({ card, onSaved, onDeleted }) {
   const [shopName, setShopName] = useState(card.shop_name || '');
@@ -64,6 +65,13 @@ export default function AdminPage() {
   const [newId, setNewId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch('/api/logout', { method: 'POST' });
+    router.push('/admin/login');
+    router.refresh();
+  }
 
   useEffect(() => {
     fetch('/api/cards')
@@ -102,7 +110,10 @@ export default function AdminPage() {
           <p className="hl-eyebrow">Card Admin</p>
           <h1 className="hl-title">Your QR cards</h1>
         </div>
-        <div className="hl-count">{activeCount} active · {cards.length} total</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div className="hl-count">{activeCount} active · {cards.length} total</div>
+          <button className="hl-btn-ghost" onClick={handleLogout}>Log out</button>
+        </div>
       </div>
 
       <form className="hl-add-row" onSubmit={addCard}>
